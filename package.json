@@ -1,0 +1,19 @@
+{
+  "name": "lambda-queue-utils",
+  "version": "0.0.0",
+  "description": "A set of utils to handle Kinesis Streams as a queue with Lambdas",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jljorgenson18/LambdaQueueUtils.git"
+  },
+  "author": "Jesse Jorgenson",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jljorgenson18/LambdaQueueUtils/issues"
+  },
+  "homepage": "https://github.com/jljorgenson18/LambdaQueueUtils#readme"
+}
