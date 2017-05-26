@@ -4,7 +4,7 @@
   "description": "A set of utils to handle Kinesis Streams as a queue with Lambdas",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha  --recursive test/*"
   },
   "repository": {
     "type": "git",
@@ -15,5 +15,11 @@
   "bugs": {
     "url": "https://github.com/jljorgenson18/LambdaQueueUtils/issues"
   },
-  "homepage": "https://github.com/jljorgenson18/LambdaQueueUtils#readme"
+  "homepage": "https://github.com/jljorgenson18/LambdaQueueUtils#readme",
+  "devDependencies": {
+    "chai": "^4.0.0",
+    "chai-as-promised": "^6.0.0",
+    "mocha": "^3.4.2",
+    "sinon": "^2.3.2"
+  }
 }

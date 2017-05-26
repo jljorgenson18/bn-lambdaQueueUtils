@@ -1,6 +1,5 @@
 const Promise = require('bluebird');
 const get = require('lodash/get');
-const AWS = require('aws-sdk');
 
 const extractEventData = (data) => {
   let payload = null;
@@ -11,50 +10,47 @@ const extractEventData = (data) => {
   return payload;
 };
 
-exports.handleEventRecords = (params) => {
-  const {records = [], handleEvent, whiteList, deadLetter, typeKey = 'type'} = params;
-  let deadLetterKinesis;
-  if(!handleEvent) {
-    throw new Error('handleEvent is required');
+const isKinesisEvent = (event) => {
+  return Boolean(event, 'Records[0].kinesis');
+};
+
+const getRecordsFromKinesisEvent = (event) => {
+  return event.Records.map(rec => extractEventData(rec.kinesis.data));
+};
+
+const extractRecordsFromEvent = (event, typeKey) => {
+  // Handle kinesis events
+  if(isKinesisEvent(event)) {
+    return getRecordsFromKinesisEvent(event);
+  } else {
+    // Handle manual events
+    return Array.isArray(event) ? event : [event];
   }
-  if(deadLetter && deadLetter.config) {
-    deadLetterKinesis = new AWS.Kinesis(deadLetter.config);
+};
+
+exports.getQueueHandler = (eventHandlers, params) => {
+  if(!eventHandlers) {
+    throw new Error('No event handlers!');
   }
-  const kinesisRecords = records.filter(rec => get(rec, 'kinesis.data', false));
-  return Promise.map(kinesisRecords, record => {
-    const eventData = extractEventData(record.kinesis.data);
-    const eventType = get(eventData, typeKey, null);
-    if(whiteList && (!eventType || !whiteList[eventType])) {
-      return;
-    }
-    return handleEvent(eventData, record.kinesis.approximateArrivalTimestamp).catch(err => {
-      return Promise.resolve({
-        failed: true,
-        eventData,
-        eventTimeStamp: record.kinesis.approximateArrivalTimestamp,
-        partitionKey: record.kinesis.partitionKey,
-        err
+  params = params || {};
+  const {typeKey = 'type'} = params;
+  return (event, context) => {
+    return Promise.resolve().then(() => {
+      let records = extractRecordsFromEvent(event);
+      // Filtering out records that are not properly formatted
+      records = records.filter(rec => rec && rec[typeKey]);
+      // And now handling the records
+      return Promise.map(records, record => {
+        const type = rec[typeKey];
+        if(eventHandlers[type]) {
+          console.log('Handling ' + type);
+          return eventHandlers[type](record);
+        }
       });
+    }).then(responses => {
+      context.succeed(responses);
+    }).catch(errs => {
+      context.fail(errs);
     });
-  }).then(results => {
-    const failedResults = results.filter(result => result.failed);
-    if(deadLetterKinesis && deadLetter.StreamName) {
-      const deadLetterRecords = failedResults.map(result => {
-        const {eventData, eventTimeStamp, partitionKey, err} = result;
-        return {
-          Data: JSON.stringify({
-            eventData,
-            eventTimeStamp,
-            errMessage: err.message,
-            errStack: err.stack
-          }),
-          PartitionKey: partitionKey
-        };
-      });
-      return deadLetterKinesis.putRecords({
-        StreamName: deadLetter.StreamName,
-        Records: deadLetterRecords
-      }).promise();
-    }
-  });
+  };
 };
