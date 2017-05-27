@@ -19,15 +19,23 @@ describe('SanityCheck', () => {
     sandbox = null;
   });
 
-  it('should be here with all of the correct keys', () => {
+  it('should be here', () => {
     // Arrange
 
     // Act
 
     // Assert
-    console.log(Object.keys(utils));
     expect(utils).to.be.ok;
 
+  });
+
+  it('should be exporting all of the correct keys', () => {
+    // Arrange
+
+    // Act
+
+    // Assert
+    expect(utils).to.have.all.keys(['KinesisHandler']);
   });
 
 });
