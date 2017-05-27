@@ -1,6 +1,27 @@
 # lambdaQueueUtils
+This is a set of utils for
 
-This is a set of utils for easily taking Kinesis events and handling them as a queue. Features include
 
-* Whitelisting certain events
-* Sending failed events to a separate DeadLetter Stream
+## Installation:
+```sh
+npm install @buyerneeds/lambda-utils --save
+```
+
+## Usage:
+To use in your Lambda function, you can pass in
+
+```js
+
+const {getKinesisHandler} = require('@buyerneeds/lambda-utils');
+
+const eventHandlers = {
+  someType: (record) => {
+    console.log('Handling the record!');
+  }
+};
+
+
+exports.handler = getQueueHandler(eventHandlers);
+
+
+```

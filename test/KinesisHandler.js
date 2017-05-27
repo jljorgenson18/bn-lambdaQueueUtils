@@ -2,7 +2,7 @@ const chai = require('chai');
 const sinon = require('sinon');
 const chaiAsPromised = require('chai-as-promised');
 
-const utils = require('../index');
+const {getHandler} = require('../src/KinesisHandler');
 const {expect} = chai;
 
 const getSampleKinesisEvent = (eventData) => {
@@ -30,7 +30,7 @@ const getSampleKinesisEvent = (eventData) => {
 
 chai.use(chaiAsPromised);
 
-describe('Index', () => {
+describe('KinesisHandler', () => {
   let sandbox;
   let mockEventHandlers;
   let mockParams;
@@ -42,10 +42,10 @@ describe('Index', () => {
       someType: sandbox.stub().resolves()
     };
     mockParams = null;
-    mockEvent = {
+    mockEvent = getSampleKinesisEvent({
       type: 'someType',
       payload: {}
-    };
+    });
     mockCallback = sandbox.spy();
   });
   afterEach(() => {
@@ -59,14 +59,14 @@ describe('Index', () => {
     // Act
 
     // Assert
-    expect(utils).to.be.ok;
+    expect(getHandler).to.be.ok;
   });
 
   it('should return a function if event handlers are passed in', () => {
     // Arrange
 
     // Act
-    const handler = utils.getQueueHandler(mockEventHandlers);
+    const handler = getHandler(mockEventHandlers);
 
     // Assert
     expect(handler).to.be.a('function');
@@ -74,7 +74,7 @@ describe('Index', () => {
 
   it('should call the callback if valid params', () => {
     // Arrange
-    const handler = utils.getQueueHandler(mockEventHandlers);
+    const handler = getHandler(mockEventHandlers);
 
     // Act
     const resultPromise = handler(mockEvent, null, mockCallback);
@@ -85,75 +85,20 @@ describe('Index', () => {
     });
   });
 
-  describe('Kinesis Events', () => {
+  it('should call the proper event handler', () => {
+    // Arrange
+    const handler = getHandler(mockEventHandlers);
 
-    beforeEach(() => {
-      mockEvent = getSampleKinesisEvent(mockEvent);
-    });
+    // Act
+    const resultPromise = handler(mockEvent, null, mockCallback);
 
-    it('should handle a kinesis event', () => {
-      // Arrange
-      const handler = utils.getQueueHandler(mockEventHandlers);
-
-      // Act
-      const resultPromise = handler(mockEvent, null, mockCallback);
-
-      // Assert
-      return resultPromise.then(responses => {
-        expect(mockCallback.args[0][0]).to.be.null;
+    // Assert
+    return resultPromise.then(responses => {
+      expect(mockEventHandlers.someType.args[0][0]).to.deep.equal({
+        type: 'someType',
+        payload: {}
       });
     });
-
-    it('should call the proper event handler', () => {
-      // Arrange
-      const handler = utils.getQueueHandler(mockEventHandlers);
-
-      // Act
-      const resultPromise = handler(mockEvent, null, mockCallback);
-
-      // Assert
-      return resultPromise.then(responses => {
-        expect(mockEventHandlers.someType.args[0][0]).to.deep.equal({
-          type: 'someType',
-          payload: {}
-        });
-      });
-    });
-
-  });
-
-  describe('Inline event', () => {
-
-    it('should handle an inline event', () => {
-      // Arrange
-      const handler = utils.getQueueHandler(mockEventHandlers);
-
-      // Act
-      const resultPromise = handler(mockEvent, null, mockCallback);
-
-      // Assert
-      return resultPromise.then(responses => {
-        expect(mockCallback.args[0][0]).to.be.null;
-      });
-
-    });
-
-    it('should call the proper event handler', () => {
-      // Arrange
-      const handler = utils.getQueueHandler(mockEventHandlers);
-
-      // Act
-      const resultPromise = handler(mockEvent, null, mockCallback);
-
-      // Assert
-      return resultPromise.then(responses => {
-        expect(mockEventHandlers.someType.args[0][0]).to.deep.equal({
-          type: 'someType',
-          payload: {}
-        });
-      });
-    });
-
   });
 
   it('should pass an error into the callback if an error was thrown', () => {
@@ -162,7 +107,7 @@ describe('Index', () => {
     mockEventHandlers.someType = sandbox.stub().rejects(sampleError);
 
     // Arrange
-    const handler = utils.getQueueHandler(mockEventHandlers);
+    const handler = getHandler(mockEventHandlers);
 
     // Act
     const resultPromise = handler(mockEvent, null, mockCallback);
