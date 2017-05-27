@@ -1,6 +1,6 @@
 {
   "name": "@buyerneeds/lambda-utils",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "A set of utils to handle Kinesis Streams as a queue with Lambdas",
   "main": "index.js",
   "scripts": {
