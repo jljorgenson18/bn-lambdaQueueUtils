@@ -38,7 +38,7 @@ exports.getHandler = (eventHandlers, params) => {
       // Filtering out records that are not properly formatted
       records = records.filter(rec => rec && rec[typeKey]);
       // And now handling the records
-      return Promise.map(records, record => {
+      return Promise.mapSeries(records, record => {
         const type = record[typeKey];
         if(eventHandlers[type]) {
           return eventHandlers[type](record);
