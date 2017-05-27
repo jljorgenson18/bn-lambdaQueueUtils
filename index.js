@@ -11,7 +11,7 @@ const extractEventData = (data) => {
 };
 
 const isKinesisEvent = (event) => {
-  return Boolean(event, 'Records[0].kinesis');
+  return Boolean(get(event, 'Records[0].kinesis'));
 };
 
 const getRecordsFromKinesisEvent = (event) => {
@@ -34,23 +34,22 @@ exports.getQueueHandler = (eventHandlers, params) => {
   }
   params = params || {};
   const {typeKey = 'type'} = params;
-  return (event, context) => {
+  return (event, context, callback) => {
     return Promise.resolve().then(() => {
       let records = extractRecordsFromEvent(event);
       // Filtering out records that are not properly formatted
       records = records.filter(rec => rec && rec[typeKey]);
       // And now handling the records
       return Promise.map(records, record => {
-        const type = rec[typeKey];
+        const type = record[typeKey];
         if(eventHandlers[type]) {
-          console.log('Handling ' + type);
           return eventHandlers[type](record);
         }
       });
     }).then(responses => {
-      context.succeed(responses);
+      callback(null, responses);
     }).catch(errs => {
-      context.fail(errs);
+      callback(errs, null);
     });
   };
 };
