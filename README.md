@@ -1,5 +1,5 @@
 # lambdaQueueUtils
-This is a set of utils for
+This is a set of utils to help handle events in lambda functions
 
 
 ## Installation:
@@ -8,11 +8,13 @@ npm install @buyerneeds/lambda-utils --save
 ```
 
 ## Usage:
-To use in your Lambda function, you can pass in
+
+
+#### Kinesis
 
 ```js
 
-const {getKinesisHandler} = require('@buyerneeds/lambda-utils');
+const {KinesisHandler} = require('@buyerneeds/lambda-utils');
 
 const eventHandlers = {
   someType: (record) => {
@@ -21,7 +23,12 @@ const eventHandlers = {
 };
 
 
-exports.handler = getQueueHandler(eventHandlers);
+exports.handler = KinesisHandler.getHandler(eventHandlers);
 
 
 ```
+
+
+ChangeLog:
+
+* 0.0.1 - First working version
