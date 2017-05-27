@@ -30,5 +30,5 @@ exports.handler = KinesisHandler.getHandler(eventHandlers);
 
 
 ChangeLog:
-
+* 0.0.2 - Moving from Promise.map to Promise.mapSeries
 * 0.0.1 - First working version
