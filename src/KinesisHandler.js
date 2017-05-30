@@ -34,6 +34,10 @@ exports.getHandler = (eventHandlers, params) => {
   const {typeKey = 'type'} = params;
   return (event, context, callback) => {
     return Promise.resolve().then(() => {
+      // Setting the NODE_ENV to production if it was a prod alias
+      if(context.invokedFunctionArn.toLowerCase().indexOf(':prod') !== -1) {
+        process.env.NODE_ENV = 'production';
+      }
       let records = extractRecordsFromEvent(event);
       // Filtering out records that are not properly formatted
       records = records.filter(rec => rec && rec[typeKey]);
